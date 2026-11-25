@@ -22,7 +22,7 @@ class User extends Authenticatable
 
     /**
      * ENKAPSULASI: $hidden
-     * Menyembunyikan atribut sensitif agar tidak pernah ikut tampil saat data diubah ke array/JSON (REST API).
+     * Menyembunyikan atribut sensitif agar tidak ikut tampil pada respons JSON.
      */
     protected $hidden = [
         'password',
@@ -41,10 +41,19 @@ class User extends Authenticatable
 
     /**
      * RELASI OOP: One-to-Many
-     * Satu User bisa memiliki banyak Task.
      */
     public function tasks()
     {
         return $this->hasMany(Task::class);
+    }
+
+    public function projects()
+    {
+        return $this->hasMany(Project::class);
+    }
+
+    public function labels()
+    {
+        return $this->hasMany(Label::class);
     }
 }

@@ -14,11 +14,15 @@ class StoreTaskRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'project_id' => 'nullable|exists:projects,id',
+            'parent_id' => 'nullable|exists:tasks,id',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'deadline' => 'required|date',
-            'priority' => 'in:low,medium,high',
-            'status' => 'in:pending,in_progress,completed',
+            'priority' => 'required|in:low,medium,high',
+            'status' => 'nullable|in:pending,in_progress,completed',
+            'label_ids' => 'nullable|array',
+            'label_ids.*' => 'exists:labels,id',
         ];
     }
 }
