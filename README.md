@@ -37,22 +37,101 @@ Sistem dibangun menggunakan **Laravel v13** dengan menerapkan empat pilar Pemrog
 
 ---
 
-## Daftar Endpoint API
+## API Endpoints
 
-Semua *endpoint* di luar autentikasi wajib menyertakan header `Accept: application/json` dan `Authorization: Bearer <token>`.
+API menyediakan 19 route terdaftar yang mencakup autentikasi, manajemen proyek, manajemen label, manajemen tugas, dan dashboard.
 
-| Modul | Method | Endpoint | Keterangan |
-| :--- | :--- | :--- | :--- |
-| **Auth** | `POST` | `/api/register` | Mendaftarkan akun baru |
-| **Auth** | `POST` | `/api/login` | Masuk dan mendapatkan *Bearer Token* |
-| **Auth** | `POST` | `/api/logout` | Keluar dan menghapus token aktif |
-| **Projects** | `GET / POST` | `/api/projects` | Lihat semua / buat proyek baru |
-| **Projects** | `GET / PUT / DELETE` | `/api/projects/{id}` | Detail / ubah / hapus proyek |
-| **Labels** | `GET / POST` | `/api/labels` | Lihat semua / buat label baru |
-| **Labels** | `GET / PUT / DELETE` | `/api/labels/{id}` | Detail / ubah / hapus label |
-| **Tasks** | `GET / POST` | `/api/tasks` | Lihat tugas (mendukung `?search=`, filter) / buat tugas & subtugas |
-| **Tasks** | `GET / PUT / DELETE` | `/api/tasks/{id}` | Detail / ubah / hapus tugas |
-| **Dashboard** | `GET` | `/api/dashboard` | Ringkasan statistik tugas, prioritas, dan proyek |
+Seluruh endpoint menggunakan prefix `/api`.
+
+### 1. Authentication
+
+| Method | Endpoint | Deskripsi | Akses |
+|---|---|---|---|
+| POST | `/api/register` | Registrasi pengguna baru | Public |
+| POST | `/api/login` | Login pengguna | Public |
+| POST | `/api/logout` | Logout dan menghapus token autentikasi | Protected |
+
+### 2. Projects
+
+| Method | Endpoint | Deskripsi |
+|---|---|---|
+| GET | `/api/projects` | Menampilkan daftar proyek |
+| POST | `/api/projects` | Membuat proyek baru |
+| GET | `/api/projects/{id}` | Menampilkan detail proyek |
+| PUT/PATCH | `/api/projects/{id}` | Memperbarui proyek |
+| DELETE | `/api/projects/{id}` | Menghapus proyek |
+
+### 3. Labels
+
+| Method | Endpoint | Deskripsi |
+|---|---|---|
+| GET | `/api/labels` | Menampilkan daftar label |
+| POST | `/api/labels` | Membuat label baru |
+| GET | `/api/labels/{id}` | Menampilkan detail label |
+| PUT/PATCH | `/api/labels/{id}` | Memperbarui label |
+| DELETE | `/api/labels/{id}` | Menghapus label |
+
+### 4. Tasks
+
+| Method | Endpoint | Deskripsi |
+|---|---|---|
+| GET | `/api/tasks` | Menampilkan daftar tugas |
+| POST | `/api/tasks` | Membuat tugas atau subtugas |
+| GET | `/api/tasks/{id}` | Menampilkan detail tugas |
+| PUT/PATCH | `/api/tasks/{id}` | Memperbarui tugas |
+| DELETE | `/api/tasks/{id}` | Menghapus tugas |
+
+**Fitur pencarian dan filter tugas**
+
+Pencarian dan filter dilakukan melalui query parameter pada endpoint `GET /api/tasks`, bukan melalui endpoint terpisah.
+
+| Parameter | Fungsi |
+|---|---|
+| `search` | Mencari tugas berdasarkan judul atau deskripsi |
+| `status` | Memfilter tugas berdasarkan status |
+| `priority` | Memfilter tugas berdasarkan prioritas |
+| `project_id` | Memfilter tugas berdasarkan proyek |
+| `label_id` | Memfilter tugas berdasarkan label |
+| `include_subtasks` | Menentukan apakah subtugas ikut ditampilkan |
+
+Contoh penggunaan:
+
+```http
+GET /api/tasks?status=completed
+GET /api/tasks?priority=high
+GET /api/tasks?project_id=1
+GET /api/tasks?label_id=1
+GET /api/tasks?search=laporan
+GET /api/tasks?include_subtasks=true
+```
+
+Secara default, daftar tugas menampilkan tugas utama beserta relasi subtugasnya. Parameter pencarian atau `include_subtasks` dapat digunakan untuk menampilkan subtugas sebagai bagian dari hasil daftar.
+
+### 5. Dashboard
+
+| Method | Endpoint | Deskripsi |
+|---|---|---|
+| GET | `/api/dashboard` | Menampilkan statistik dashboard pengguna |
+
+### Autentikasi Endpoint
+
+Endpoint yang memiliki akses **Protected** wajib menggunakan token autentikasi Laravel Sanctum.
+
+Token diperoleh setelah pengguna berhasil melakukan login.
+
+Tambahkan header berikut pada request:
+
+```http
+Authorization: Bearer {token}
+Accept: application/json
+```
+
+### Catatan
+
+- Endpoint proyek, label, tugas, logout, dan dashboard membutuhkan autentikasi.
+- Endpoint register dan login dapat diakses tanpa token.
+- Subtugas dikelola melalui endpoint tugas menggunakan relasi `parent_id`, bukan melalui kelompok endpoint tersendiri.
+- Metode `PUT` dan `PATCH` tersedia untuk memperbarui data.
 
 ---
 
