@@ -1,58 +1,94 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Todoist Clone — Backend REST API
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Repositori ini berisi implementasi sistem *backend* **RESTful API** yang mengadopsi fitur inti aplikasi manajemen tugas **Todoist**. Proyek ini dikembangkan untuk memenuhi Tugas Besar mata kuliah **Praktikum Pemrograman Berorientasi Objek (PPBO)** pada Program Studi S1 Sistem Informasi, Fakultas MIPA, Universitas Tanjungpura.
 
-## About Laravel
+Sistem dibangun menggunakan **Laravel v13** dengan menerapkan empat pilar Pemrograman Berorientasi Objek (*Encapsulation, Inheritance, Abstraction, Polymorphism*) serta prinsip desain **SOLID** dan **Factory Pattern**.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Fitur Utama
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+* **Autentikasi Pengguna (Laravel Sanctum):** Mendukung *register*, *login*, dan *logout* berbasis *Bearer Token* sehingga data setiap pengguna terisolasi dengan aman.
+* **Manajemen Proyek (*Projects*):** Operasi CRUD lengkap untuk mengelompokkan tugas ke dalam proyek berkode warna.
+* **Manajemen Tugas (*Tasks*):** Operasi CRUD lengkap dengan judul, deskripsi, tenggat waktu (*deadline*), tingkat prioritas (`low`, `medium`, `high`), dan status pengerjaan (`pending`, `in_progress`, `completed`).
+* **Tugas Bertingkat (*Subtasks*):** Pemecahan tugas utama menjadi subtugas bersarang menggunakan relasi mandiri (*self-referencing*).
+* **Label & Kategori (*Labels*):** Penandaan tugas fleksibel menggunakan relasi *Many-to-Many*.
+* **Pencarian & Filter:** Pencarian tugas berdasarkan kata kunci (`search`) serta penyaringan kombinasi berdasarkan `status`, `priority`, `project_id`, dan `label_id`.
+* **Prioritas Dinamis & Dashboard Statistik:** Penentuan warna label (`badge_color`) dan pesan pengingat (`reminder_message`) secara dinamis menggunakan `PriorityFactory`, serta ringkasan statistik produktivitas pengguna.
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Penerapan Konsep PBO & Arsitektur
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+* **Enkapsulasi:** Pembatasan atribut melalui properti `$fillable` dan penyembunyian data sensitif (`password`, `remember_token`) melalui `$hidden` pada lapisan Model (`app/Models/`).
+* **Pewarisan (*Inheritance*):** Seluruh Model mewarisi `Model`/`Authenticatable` dan seluruh Kontroler mewarisi kelas dasar `Controller`.
+* **Abstraksi & Polimorfisme:** Kontrak `TaskPriorityInterface` diimplementasikan oleh kelas `HighPriority`, `MediumPriority`, dan `LowPriority` di dalam `app/Services/Priority/`.
+* **Factory Pattern:** Kelas `PriorityFactory::make()` menangani pembuatan objek prioritas secara dinamis tanpa membebani kontroler.
+* **Single Responsibility Principle (SRP):** Validasi input dipisahkan ke dalam kelas `FormRequest` (`StoreProjectRequest`, `StoreLabelRequest`, `StoreTaskRequest`).
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+---
 
-## Agentic Development
+## Teknologi yang Digunakan
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+* **Framework:** Laravel v13 (PHP)
+* **Autentikasi:** Laravel Sanctum
+* **Basis Data:** MySQL (Laragon)
+* **Pengujian API:** EchoAPI
 
-```bash
-composer require laravel/boost --dev
+---
 
-php artisan boost:install
-```
+## Daftar Endpoint API
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Semua *endpoint* di luar autentikasi wajib menyertakan header `Accept: application/json` dan `Authorization: Bearer <token>`.
 
-## Contributing
+| Modul | Method | Endpoint | Keterangan |
+| :--- | :--- | :--- | :--- |
+| **Auth** | `POST` | `/api/register` | Mendaftarkan akun baru |
+| **Auth** | `POST` | `/api/login` | Masuk dan mendapatkan *Bearer Token* |
+| **Auth** | `POST` | `/api/logout` | Keluar dan menghapus token aktif |
+| **Projects** | `GET / POST` | `/api/projects` | Lihat semua / buat proyek baru |
+| **Projects** | `GET / PUT / DELETE` | `/api/projects/{id}` | Detail / ubah / hapus proyek |
+| **Labels** | `GET / POST` | `/api/labels` | Lihat semua / buat label baru |
+| **Labels** | `GET / PUT / DELETE` | `/api/labels/{id}` | Detail / ubah / hapus label |
+| **Tasks** | `GET / POST` | `/api/tasks` | Lihat tugas (mendukung `?search=`, filter) / buat tugas & subtugas |
+| **Tasks** | `GET / PUT / DELETE` | `/api/tasks/{id}` | Detail / ubah / hapus tugas |
+| **Dashboard** | `GET` | `/api/dashboard` | Ringkasan statistik tugas, prioritas, dan proyek |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## Cara Menjalankan di Lokal
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+1. *Clone* repositori ini:
+   ```bash
+   git clone https://github.com/bit-ryy/Tubes-ToDoList.git
+   cd Tubes-ToDoList
+   ```
+2. Instal dependensi PHP:
+   ```bash
+   composer install
+   ```
+3. Salin file konfigurasi lingkungan dan sesuaikan pengaturan database MySQL di `.env`:
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+4. Jalankan migrasi tabel:
+   ```bash
+   php artisan migrate
+   ```
+5. Nyalakan server lokal:
+   ```bash
+   php artisan serve
+   ```
+6. Akses REST API melalui `http://127.0.0.1:8000/api` menggunakan EchoAPI atau Postman.
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Tim Pengembang
 
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+* Dhini Zakiyatul Wafa (H1101251020)
+* Alfonsius Pernandes Roby (H1101251033)
+* Deslo Aldo Anggoro (H1101251036)
+* Phasacola Grey Kalista (H1101251037)
+* Iren Meiliani Taslim (H1101251062)
+* Maulana Malik Ibrahim (H1101251063)
